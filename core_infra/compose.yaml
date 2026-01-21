@@ -1,0 +1,173 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - infrastructure_net
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_DNS_API_TOKEN=${CLOUDFLARE_TOKEN}
+      - TZ=${TIMEZONE:-UTC}
+    volumes:
+      - /docker/traefik/etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /docker/traefik/traefik.yml:/traefik.yml:ro
+      - /docker/traefik/acme.json:/acme.json
+      - /var/log/traefik:/var/log/traefik
+      # Removed dynamic.yml volume mount
+    labels:
+      - glance.name=traefik
+      - glance.icon=mdi:router-network
+      - glance.url=https://${DASHBOARD_DOMAIN}/
+      - glance.description=routing management
+      - glance.id=traefik
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      # Dashboard Routing
+      - traefik.http.routers.dashboard.rule=Host(`${DASHBOARD_DOMAIN}`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls=true
+      - traefik.http.routers.dashboard.tls.certresolver=myresolver
+      - traefik.http.routers.dashboard.service=api@internal
+      # Middlewares
+      - traefik.http.routers.dashboard.middlewares=crowdsec,traefik-auth
+      - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_AUTH_CREDENTIALS}
+      - traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.enabled=true
+      - traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecLapiHost=crowdsec:8080
+      - traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecLapiKey=${CROWDSEC_API_KEY}
+      - traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecMode=live
+      # Wildcard Cert Configuration
+      - traefik.http.routers.dashboard.tls.domains[0].main=${ROOT_DOMAIN}
+      - traefik.http.routers.dashboard.tls.domains[0].sans=*.${ROOT_DOMAIN}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - GID=1000
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+        crowdsecurity/base-http-scenarios
+    volumes:
+      - /docker/crowdsec/config:/etc/crowdsec
+      - /docker/crowdsec/data:/var/lib/crowdsec/data
+      - /var/log/traefik:/var/log/traefik:ro
+    labels:
+      - glance.name=Crowdsec
+      - glance.icon=mdi:security
+      - glance.description=Security Management
+      - glance.parent=traefik
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: always
+    networks:
+      - proxy
+      - infrastructure_net
+    ports:
+      - 3001:3001
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+      - UMASK=0022
+    volumes:
+      - /docker/kuma:/app/data
+    labels:
+      - glance.name=UptimeKuma
+      - glance.icon=si:uptimekuma
+      - glance.url=https://${KUMA_DOMAIN}/
+      - glance.description=Server Status
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.uptime-kuma.rule=Host(`${KUMA_DOMAIN}`)
+      - traefik.http.routers.uptime-kuma.entrypoints=websecure
+      - traefik.http.routers.uptime-kuma.tls=true
+      - traefik.http.routers.uptime-kuma.tls.certresolver=myresolver
+      - traefik.http.routers.uptime-kuma.middlewares=crowdsec
+      - traefik.http.services.uptime-kuma.loadbalancer.server.port=3001
+
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+    labels:
+      - glance.name=whoami
+      - glance.icon=mdi:help
+      - glance.url=https://${WHOAMI_DOMAIN}/
+      - glance.description=WhoAmI in a container
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.whoami.rule=Host(`${WHOAMI_DOMAIN}`)
+      - traefik.http.routers.whoami.entrypoints=websecure
+      - traefik.http.routers.whoami.tls=true
+      - traefik.http.routers.whoami.tls.certresolver=myresolver
+      - traefik.http.routers.whoami.middlewares=crowdsec
+
+  archisteamfarm:
+    image: justarchi/archisteamfarm:latest
+    container_name: archi-steam-farm
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - infrastructure_net
+    ports:
+      - 1243:1242
+    volumes:
+      - ${DOCKER_ROOT}/archi/config:/app/config
+    labels:
+      - glance.name=ArchiSteamFarm
+      - glance.icon=si:steam
+      - glance.url=http://${HOST_IP}:1243/
+      - glance.description=Steam Card Idling
+
+  blocky:
+    image: spx01/blocky:latest
+    container_name: blocky
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - 4000:4000
+    environment:
+      - TZ=${TIMEZONE:-UTC}
+    volumes:
+      - ${DOCKER_ROOT}/blocky/config.yml:/app/config.yml
+
+networks:
+  proxy:
+    external: true
+  infrastructure_net:
+    external: true
