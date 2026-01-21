@@ -22,12 +22,11 @@ services:
       - CF_DNS_API_TOKEN=${CLOUDFLARE_TOKEN}
       - TZ=${TIMEZONE:-UTC}
     volumes:
-      - /docker/traefik/etc/localtime:/etc/localtime:ro
+      - ${DOCKER_ROOT}/traefik/etc/localtime:/etc/localtime:ro
+      - ${DOCKER_ROOT}/traefik/traefik.yml:/traefik.yml:ro
+      - ${DOCKER_ROOT}/traefik/acme.json:/acme.json
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /docker/traefik/traefik.yml:/traefik.yml:ro
-      - /docker/traefik/acme.json:/acme.json
       - /var/log/traefik:/var/log/traefik
-      # Removed dynamic.yml volume mount
     labels:
       - glance.name=traefik
       - glance.icon=mdi:router-network
@@ -67,12 +66,12 @@ services:
       - infrastructure_net
     environment:
       - TZ=${TIMEZONE:-UTC}
-      - GID=1000
+      - GID=${GID:-1000}
       - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
         crowdsecurity/base-http-scenarios
     volumes:
-      - /docker/crowdsec/config:/etc/crowdsec
-      - /docker/crowdsec/data:/var/lib/crowdsec/data
+      - ${DOCKER_ROOT}/crowdsec/config:/etc/crowdsec
+      - ${DOCKER_ROOT}/crowdsec/data:/var/lib/crowdsec/data
       - /var/log/traefik:/var/log/traefik:ro
     labels:
       - glance.name=Crowdsec
@@ -98,7 +97,7 @@ services:
       - TZ=${TIMEZONE:-UTC}
       - UMASK=0022
     volumes:
-      - /docker/kuma:/app/data
+      - ${DOCKER_ROOT}/kuma:/app/data
     labels:
       - glance.name=UptimeKuma
       - glance.icon=si:uptimekuma
