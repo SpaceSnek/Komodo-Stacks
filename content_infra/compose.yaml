@@ -1,0 +1,214 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - DOMAIN=${DOMAIN}
+      - SIGNUPS_ALLOWED=${SIGNUPS_ALLOWED}
+      - WEBSOCKET_ENABLED=${WEBSOCKET_ENABLED}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/vaultwarden/vw-data:/data
+    labels:
+      - glance.name=Vaultwarden
+      - glance.icon=si:vaultwarden
+      - glance.url=https://${VAULTWARDEN_DOMAIN}/
+      - glance.description=Password Manager
+      - traefik.enable=true
+      - traefik.http.routers.vaultwarden.rule=Host(`${VAULTWARDEN_DOMAIN}`)
+      - traefik.http.routers.vaultwarden.entrypoints=websecure
+      - traefik.http.routers.vaultwarden.tls=true
+      - traefik.http.routers.vaultwarden.tls.certresolver=myresolver
+      - traefik.http.routers.vaultwarden.middlewares=crowdsec@docker
+      - traefik.http.services.vaultwarden.loadbalancer.server.port=80
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    hostname: B1abFlix
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    ports:
+      - 7359:7359/udp
+      - 1900:1900/udp
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/jellyfin:/config
+      - ${DATA_ROOT}:/data
+    labels:
+      - glance.name=Jellyfin
+      - glance.icon=si:jellyfin
+      - glance.url=https://${JELLYFIN_DOMAIN}/
+      - glance.description=Movies and More
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.rule=Host(`${JELLYFIN_DOMAIN}`)
+      - traefik.http.routers.jellyfin.entrypoints=websecure
+      - traefik.http.routers.jellyfin.tls=true
+      - traefik.http.routers.jellyfin.tls.certresolver=myresolver
+      - traefik.http.routers.jellyfin.middlewares=crowdsec@docker
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
+
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    restart: unless-stopped
+    user: ${PUID}:${PGID}
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - ND_LASTFM_APIKEY=${ND_LASTFM_APIKEY}
+      - ND_LASTFM_SECRET=${ND_LASTFM_SECRET}
+    volumes:
+      - ${DOCKER_ROOT}/navidrome:/data
+      - ${DATA_ROOT}/music:/music:ro
+    labels:
+      - glance.name=Navidrome
+      - glance.icon=si:musicbrainz
+      - glance.url=https://${NAVIDROME_DOMAIN}/
+      - glance.description=Music streaming!
+      - traefik.enable=true
+      - traefik.http.routers.navidrome.rule=Host(`${NAVIDROME_DOMAIN}`)
+      - traefik.http.routers.navidrome.entrypoints=websecure
+      - traefik.http.routers.navidrome.tls=true
+      - traefik.http.routers.navidrome.tls.certresolver=myresolver
+      - traefik.http.routers.navidrome.middlewares=crowdsec@docker
+      - traefik.http.services.navidrome.loadbalancer.server.port=4533
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/audiobooks:/audiobooks
+      - ${DATA_ROOT}/podcasts:/podcasts
+      - ${DOCKER_ROOT}/audiobookshelf:/config
+      - ${DOCKER_ROOT}/audiobookshelf/metadata:/metadata
+    labels:
+      - glance.name=Audiobookshelf
+      - glance.icon=si:audiobookshelf
+      - glance.url=https://${AUDIOBOOKSHELF_DOMAIN}/
+      - glance.description=Audiobooks & Podcasts
+      - traefik.enable=true
+      - traefik.http.routers.audiobookshelf.rule=Host(`${AUDIOBOOKSHELF_DOMAIN}`)
+      - traefik.http.routers.audiobookshelf.entrypoints=websecure
+      - traefik.http.routers.audiobookshelf.tls=true
+      - traefik.http.routers.audiobookshelf.tls.certresolver=myresolver
+      - traefik.http.routers.audiobookshelf.middlewares=crowdsec@docker
+      - traefik.http.services.audiobookshelf.loadbalancer.server.port=80
+
+  wizarr:
+    image: ghcr.io/wizarrrr/wizarr:latest
+    container_name: wizarr
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DISABLE_BUILTIN_AUTH=${DISABLE_BUILTIN_AUTH}
+    volumes:
+      - ${DOCKER_ROOT}/wizarr:/data
+    labels:
+      - glance.name=Wizarr
+      - glance.icon=mdi:wizard-hat
+      - glance.url=https://${WIZARR_DOMAIN}/
+      - glance.description=User Invitations
+      - traefik.enable=true
+      - traefik.http.routers.wizarr.rule=Host(`${WIZARR_DOMAIN}`)
+      - traefik.http.routers.wizarr.entrypoints=websecure
+      - traefik.http.routers.wizarr.tls=true
+      - traefik.http.routers.wizarr.tls.certresolver=myresolver
+      - traefik.http.routers.wizarr.middlewares=crowdsec@docker
+      - traefik.http.services.wizarr.loadbalancer.server.port=5690
+
+  jellystat:
+    image: cyfershepard/jellystat:latest
+    container_name: jellystat
+    restart: unless-stopped
+    depends_on:
+      - jellystat-db
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_IP=${POSTGRES_IP}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - TZ=${TZ}
+    volumes:
+      - jellystat-backup-data:/app/backend/backup-data
+    labels:
+      - glance.name=Jellystat
+      - glance.icon=mdi:jellyfish
+      - glance.url=https://${JELLYSTAT_DOMAIN}/
+      - glance.description=Media Statistics
+      - traefik.enable=true
+      - traefik.http.routers.jellystat.rule=Host(`${JELLYSTAT_DOMAIN}`)
+      - traefik.http.routers.jellystat.entrypoints=websecure
+      - traefik.http.routers.jellystat.tls=true
+      - traefik.http.routers.jellystat.tls.certresolver=myresolver
+      - traefik.http.routers.jellystat.middlewares=crowdsec@docker
+      - traefik.http.services.jellystat.loadbalancer.server.port=3000
+
+  jellystat-db:
+    image: postgres:15.2
+    container_name: jellystat-db
+    restart: unless-stopped
+    shm_size: 1gb
+    networks:
+      - infrastructure_net
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    labels:
+      - glance.name=jellystat-db
+      - glance.icon=mdi:jellyfish
+      - glance.description=jellystat database
+      - glance.parent=jellyfin
+
+  glance:
+    image: glanceapp/glance
+    container_name: glance
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 9080:8080
+    volumes:
+      - ${DOCKER_ROOT}/glance/config:/app/config
+      - ${DOCKER_ROOT}/glance/assets:/app/assets
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - glance.name=Glance
+      - glance.hide=true
+
+networks:
+  proxy:
+    external: true
+  infrastructure_net:
+    external: true
+
+volumes:
+  postgres-data:
+  jellystat-backup-data:
