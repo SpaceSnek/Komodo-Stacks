@@ -1,0 +1,92 @@
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 7878:7878
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_CONFIG_BASE}/radarr:/config
+      - ${MEDIA_DATA_PATH}:/data
+    labels:
+      glance.name: Radarr
+      glance.icon: si:radarr
+      glance.url: http://${SERVER_IP}:7878/
+      glance.description: Movie indexer
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 8989:8989
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_CONFIG_BASE}/sonarr:/config
+      - ${MEDIA_DATA_PATH}:/data
+    labels:
+      glance.name: Sonarr
+      glance.icon: si:sonarr
+      glance.url: http://${SERVER_IP}:8989/
+      glance.description: TV Indexer
+
+  jellyseerr:
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    ports:
+      - 5055:5055
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - LOG_LEVEL=${JELLYSEERR_LOG_LEVEL}
+    volumes:
+      - ${DOCKER_CONFIG_BASE}/seer:/app/config
+    labels:
+      - glance.name=Jellyseerr
+      - glance.icon=mdi:jellyfish
+      - glance.url=https://${JELLYSEERR_DOMAIN}
+      - glance.description=Request Management
+      - glance.parent=jellyfin
+      - traefik.enable=true
+      - traefik.http.routers.jellyseerr.rule=Host(`${JELLYSEERR_DOMAIN}`)
+      - traefik.http.routers.jellyseerr.entrypoints=websecure
+      - traefik.http.routers.jellyseerr.tls=true
+      - traefik.http.routers.jellyseerr.tls.certresolver=myresolver
+      - traefik.http.routers.jellyseerr.middlewares=crowdsec@docker
+      - traefik.http.services.jellyseerr.loadbalancer.server.port=5055
+
+  pluto-for-channels:
+    image: jonmaddox/pluto-for-channels
+    container_name: pluto-for-channels
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 8087:80
+    labels:
+      glance.name: Pluto-for-Channels
+      glance.icon: mdi:dots-circle
+      glance.description: Pluto TV for Channels
+      glance.parent: jellyfin
+
+networks:
+  proxy:
+    external: true
+  infrastructure_net:
+    external: true
