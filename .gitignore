@@ -1,0 +1,4 @@
+/download_infra/.env
+/core_infra/.env
+/content_infra/.env
+/media_management/.env
