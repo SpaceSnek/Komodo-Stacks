@@ -9,64 +9,15 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    env:
-      # Dummy Variables for Testing (theres gotta be a better way to do this, right?)
-      PUID: 1000
-      PGID: 1000
-      TZ: UTC
-      TIMEZONE: UTC
-      HOST_IP: 127.0.0.1
-      SERVER_IP: 127.0.0.1
-      LAN_NETWORK: 192.168.1.0/24
-      DOCKER_ROOT: ./docker
-      DOCKER_CONFIG_BASE: ./config
-      DATA_ROOT: ./data
-      MEDIA_DATA_PATH: ./media
-      ROOT_DOMAIN: example.com
-      DASHBOARD_DOMAIN: dash.example.com
-      KUMA_DOMAIN: status.example.com
-      WHOAMI_DOMAIN: whoami.example.com
-      JELLYSEERR_DOMAIN: requests.example.com
-      JELLYFIN_DOMAIN: jf.example.com
-      NAVIDROME_DOMAIN: music.example.com
-      AUDIOBOOKSHELF_DOMAIN: books.example.com
-      WIZARR_DOMAIN: join.example.com
-      JELLYSTAT_DOMAIN: stats.example.com
-      VAULTWARDEN_DOMAIN: vault.example.com
-      VPN_USER: dummy_user
-      VPN_PASS: dummy_pass
-      VPN_REGION: us_east
-      CLOUDFLARE_EMAIL: <mailto:admin@example.com>
-      CLOUDFLARE_TOKEN: dummy_token_12345
-      CROWDSEC_API_KEY: dummy_crowdsec_key_67890
-      TRAEFIK_AUTH_CREDENTIALS: admin:$$apr1$$dummyhash
-      SLSKD_API_KEY: dummy_slskd_key
-      NZBGET_USER: admin
-      NZBGET_PASS: password
-      ND_LASTFM_APIKEY: dummy_lastfm_key
-      ND_LASTFM_SECRET: dummy_lastfm_secret
-      JWT_SECRET: dummy_jwt_secret_long_string
-      SIGNUPS_ALLOWED: "false"
-      WEBSOCKET_ENABLED: "true"
-      JELLYSEERR_LOG_LEVEL: info
-      FS_LOG_LEVEL: info
-      FS_LOG_HTML: "false"
-      FS_CAPTCHA_SOLVER: none
-      FS_BROWSER_TIMEOUT: 60000
-      FS_DISABLE_MEDIA: "false"
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_IP: jellystat-db
-      POSTGRES_PORT: 1111
-      DISABLE_BUILTIN_AUTH: "false"
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Validate all compose files
         run: |
+          ENV_FILE=".github/workflows/dummy.env"
+
           find . -name "compose.yaml" -o -name "docker-compose.yaml" | while read file; do
             echo "Checking $file..."
-            docker compose -f "$file" config -q || exit 1
+            docker compose --env-file "$ENV_FILE" -f "$file" config -q || exit 1
           done
