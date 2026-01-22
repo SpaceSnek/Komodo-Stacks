@@ -2,20 +2,45 @@
 
 My collection of Docker Compose stacks I'm managing through [Komodo](https://komo.do/). These are designed to be synced directly to a Komodo instance for automated deployments and GitOps-style management.
 
-this is going to be ever growing and changing, it is not reccomended you hook directly into this, but to use it for inspiration as i WILL make breaking changes to it.
+this is going to be ever growing and changing, it is not reccomended you hook directly into this, but to use it for inspiration as ***I WILL make breaking changes to it***.
 ## What's in here? 📂
 
-The repo is organized into different stacks for various services. Some of the container types you will find include:
+The repo is organized into different stacks for various services. The services in these stacks include:
 
-- **Infrastructure**: Traefik for reverse proxying, CrowdSec for security, and Blocky for DNS.
-- **Media**: The usual suspects (Radarr, Sonarr, Jellyfin, etc.) and some extras like Audiobookshelf and Navidrome.
-- **Utilities**: Vaultwarden for passwords, Uptime Kuma for monitoring, and Glance as a dashboard.
+- **Content_Infra**:
+    - *Vaultwarden*
+    - *Jellyfin*
+    - *Navidrome*
+    - *AudioBookShelf*
+    - *Wizarr*
+    - *Jellystat*
+    - *Jellystat-DB*
+    - *Glance*
+- **Core_Infra**:
+    - *Traefik*
+    - *Crowdsec*
+    - *UptimeKuma*
+    - *whoami*
+    - *ArchiSteamFarm*
+    - *Blocky*
+- **Download_Infra**:
+    - *Gluetun*
+    - *SLSKD*
+    - *NZBGet*
+    - *QBitTorrentVPN (a little redundant with gluetun, looking into alternative)*
+    - *Prowlarr*
+    - *FlareSolverr*
+- **Media_Management**
+    - *Radarr*
+    - *Sonarr*
+    - *Jellyseerr*
+    - *Pluto-For-Channels*
 
 ## Setup ⚙️
 
-These files rely heavily on environment variables to keep secrets out of the repo. You'll need a `.env` file on your host or defined within Komodo to fill in the blanks.
+These stacks rely ***heavily*** on environment variables for best security practices. You'll need a `.env` file on your host or defined within Komodo to make these stacks function.
 
-I've included `sample.env` files in the directories to show what variables are required. If this is not filled out, it will simply not work.
+I've included a `sample.env` files in the directories to show what variables are required. If this is not filled out, it will simply not work.
 
 ## Usage with Komodo 🚀
 If you are insane and want to copy my *exact* setup do the following:
