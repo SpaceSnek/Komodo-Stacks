@@ -237,6 +237,8 @@ services:
     image: lscr.io/linuxserver/mariadb:11.4.5
     container_name: mariadb
     restart: unless-stopped
+    networks:
+      - infrastructure_net
     environment:
       - PUID=${PUID}
       - PGID=${GUID}
