@@ -208,7 +208,8 @@ services:
     container_name: booklore
     restart: unless-stopped
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     networks:
       - infrastructure_net
     ports:
@@ -225,6 +226,13 @@ services:
       - ${DOCKER_ROOT}/booklore/data:/app/data
       - ${DOCKER_ROOT}/booklore/bookdrop:/bookdrop
       - ${DATA_ROOT}/books:/books
+    healthcheck:
+      test: wget -q -O - http://localhost:${BOOKLORE_PORT}/api/v1/healthcheck
+      interval: 60s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+    restart: unless-stopped
 
   mariadb:
     image: lscr.io/linuxserver/mariadb:11.4.5
@@ -240,7 +248,11 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
       - ${DOCKER_ROOT}/mariadb/config:/config
-
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 networks:
   proxy:
     external: true
