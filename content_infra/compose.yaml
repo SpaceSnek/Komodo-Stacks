@@ -203,6 +203,44 @@ services:
       - glance.name=Glance
       - glance.hide=true
 
+  booklore:
+    image: booklore/booklore:latest
+    container_name: booklore
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    networks:
+      - infrastructure_net
+    ports:
+      - "${BOOKLORE_PORT}:${BOOKLORE_PORT}"
+    environment:
+      - USER_ID=${PUID}
+      - GROUP_ID=${GUID}
+      - TZ=${TZ}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USERNAME=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - BOOKLORE_PORT=${BOOKLORE_PORT}
+    volumes:
+      - ${DOCKER_ROOT}/booklore/data:/app/data
+      - ${DOCKER_ROOT}/booklore/bookdrop:/bookdrop
+      - ${DATA_ROOT}/books:/books
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:11.4.5
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${DOCKER_ROOT}/mariadb/config:/config
+
 networks:
   proxy:
     external: true
