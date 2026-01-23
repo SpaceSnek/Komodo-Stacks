@@ -203,6 +203,22 @@ services:
       - glance.name=Glance
       - glance.hide=true
 
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    restart: unless-stopped
+    ports:
+      - 5000:5000
+    volumes:
+      - ${DATA_ROOT}/books:/books
+      - ${DOCKER_ROOT}/kavita/config:/kavita/config
+    environment:
+      - TZ=${TZ}
+    labels:
+      - glance.name=Kavita
+      - glance.icon=mdi:book-arrow-down
+      - glance.description=EBook management
+
 networks:
   proxy:
     external: true
