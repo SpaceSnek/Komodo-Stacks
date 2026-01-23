@@ -207,6 +207,8 @@ services:
     image: jvmilazz0/kavita:latest
     container_name: kavita
     restart: unless-stopped
+    networks:
+      - infrastructure_net
     ports:
       - 5000:5000
     volumes:
