@@ -66,7 +66,7 @@ services:
       - NZBGET_PASS=${NZBGET_PASS}
     volumes:
       - ${DOCKER_ROOT}/nzbget:/config
-      - ${DATA_ROOT}:/downloads
+      - ${DATA_ROOT}:/data
     labels:
       glance.name: nzbget
       glance.icon: mdi:account-arrow-down
