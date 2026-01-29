@@ -11,7 +11,7 @@ services:
       - infrastructure_net
     ports:
       - 5030:5030 #slskd
-      - 6789:6789 #nzbget
+      #- 6789:6789 #nzbget - uncomment this line and the one in the NZBGet container if you want to access NZBGet with a VPN connection
       - 9696:9696 #prowlarr
       - 8191:8191 #flaresolverr
     environment:
@@ -57,7 +57,11 @@ services:
     image: nzbgetcom/nzbget:latest
     container_name: nzbget
     restart: unless-stopped
-    network_mode: service:gluetun
+    #network_mode: service:gluetun
+    networks:
+      - infrastructure_net
+    ports:
+      - 6789:6789
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
