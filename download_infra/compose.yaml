@@ -72,7 +72,6 @@ services:
       glance.icon: mdi:account-arrow-down
       glance.url: http://${HOST_IP}:6789/
       glance.description: peer2peer files
-      glance.parent: gluetun
   qbittorrentvpn:
     image: binhex/arch-qbittorrentvpn:latest
     container_name: qbittorrentvpn
