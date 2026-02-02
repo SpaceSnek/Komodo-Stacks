@@ -209,7 +209,7 @@ services:
     networks:
       - infrastructure_net
     ports:
-      - 3000:3000
+      - 3030:3000
     environment:
       HOMEPAGE_ALLOWED_HOSTS: $HOMEPAGE_ALLOWED_HOSTS
       PUID: $PUID
