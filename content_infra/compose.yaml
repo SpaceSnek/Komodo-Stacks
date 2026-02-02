@@ -202,6 +202,21 @@ services:
     labels:
       - glance.name=Glance
       - glance.hide=true
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 3030:3000
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: $HOMEPAGE_ALLOWED_HOSTS
+      PUID: $PUID
+      PGID: $PGID
+    volumes:
+      - ${DOCKER_ROOT}/homepage/config:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations, see alternative methods
 
   kavita:
     image: jvmilazz0/kavita:latest
