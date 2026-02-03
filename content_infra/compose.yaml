@@ -202,7 +202,18 @@ services:
     labels:
       - glance.name=Glance
       - glance.hide=true
-
+  dashy:
+    image: lissy93/dashy
+    container_name: Dashy
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 9090:8080
+    volumes:
+      - ${DOCKER_ROOT}/dashy/config/my-config.yml:/app/user-data/conf.yml
+    environment:
+      - NODE_ENV=production
   kavita:
     image: jvmilazz0/kavita:latest
     container_name: kavita
