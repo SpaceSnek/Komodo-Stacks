@@ -44,6 +44,22 @@ services:
       - glance.url=http://${HOST_IP}:1243/
       - glance.description=Steam Card Farming
 
+  teamspeak:
+    image: teamspeaksystems/teamspeak6-server:latest
+    container_name: teamspeak-server
+    restart: unless-stopped
+    ports:
+      - "9987:9987/udp"   # Voice Port
+      - "30033:30033/tcp" # File Transfer
+      # - "10080:10080/tcp" # Web Query
+    environment:
+      - TSSERVER_LICENSE_ACCEPTED=accept
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${DOCKER_ROOT}/ts6:/var/tsserver"
+
 networks:
   proxy:
     external: true
