@@ -7,40 +7,52 @@ this is going to be ever growing and changing, it is not reccomended you hook di
 
 The repo is organized into different stacks for various services. The services in these stacks include:
 
-- **Content_Infra**:
-    - *Vaultwarden*
-    - *Jellyfin*
-    - *Navidrome*
-    - *AudioBookShelf*
-    - *Wizarr*
-    - *Jellystat*
-    - *Jellystat-DB*
-    - *Glance*
-- **Core_Infra**:
+- **network_core:**
     - *Traefik*
     - *Crowdsec*
-    - *UptimeKuma*
-    - *whoami*
-    - *ArchiSteamFarm*
     - *Blocky*
-- **Download_Infra**:
+- **monitoring:**
+    - *Uptime-Kuma*
+    - *Glance*
+    - *whoami*
+- **vpn_downloads:**
     - *Gluetun*
     - *SLSKD*
     - *NZBGet*
-    - *QBitTorrentVPN (a little redundant with gluetun, looking into alternative)*
+    - *QBitTorrentVPN (considering migration to Gluetun-routed alternative)*
     - *Prowlarr*
     - *FlareSolverr*
-- **Media_Management**
+- **media_automation:**
     - *Radarr*
     - *Sonarr*
     - *Jellyseerr*
-    - *Pluto-For-Channels*
+- **media_servers:**
+    - *Jellyfin*
+    - *Navidrome*
+    - *Audiobookshelf*
+    - *Kavita*
+    - *Pluto-for-Channels (logically, this should move to media_automation)*
+    - *Wizarr*
+    - *Jellystat*
+    - *Jellystat-DB*
+- **utilities:**
+    - *Vaultwarden*
+    - *ArchiSteamFarm*
 
 ## Setup ⚙️
 
 These stacks rely ***heavily*** on environment variables for best security practices. You'll need a `.env` file on your host or defined within Komodo to make these stacks function.
 
 I've included a `sample.env` files in the directories to show what variables are required. If this is not filled out, it will simply not work.
+
+Be sure to deploy in the following order:
+1. network_core
+2. monitoring
+3. vpn_downloads
+4. media_automation
+5. media_servers
+6. utilities
+
 
 ## Usage with Komodo 🚀
 If you are insane and want to copy my *exact* setup do the following:
