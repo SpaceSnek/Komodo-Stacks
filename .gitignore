@@ -1,4 +1,6 @@
-/download_infra/.env
-/core_infra/.env
-/content_infra/.env
-/media_management/.env
+/network_core/.env
+/monitoring/.env
+/vpn_downloads/.env
+/media_automation/.env
+/media_servers/.env
+/utilities/.env

@@ -1,31 +1,4 @@
 services:
-  vaultwarden:
-    image: vaultwarden/server:latest
-    container_name: vaultwarden
-    restart: unless-stopped
-    networks:
-      - proxy
-      - infrastructure_net
-    environment:
-      - DOMAIN=${DOMAIN}
-      - SIGNUPS_ALLOWED=${SIGNUPS_ALLOWED}
-      - WEBSOCKET_ENABLED=${WEBSOCKET_ENABLED}
-      - TZ=${TZ}
-    volumes:
-      - ${DOCKER_ROOT}/vaultwarden/vw-data:/data
-    labels:
-      - glance.name=Vaultwarden
-      - glance.icon=si:vaultwarden
-      - glance.url=https://${VAULTWARDEN_DOMAIN}/
-      - glance.description=Password Manager
-      - traefik.enable=true
-      - traefik.http.routers.vaultwarden.rule=Host(`${VAULTWARDEN_DOMAIN}`)
-      - traefik.http.routers.vaultwarden.entrypoints=websecure
-      - traefik.http.routers.vaultwarden.tls=true
-      - traefik.http.routers.vaultwarden.tls.certresolver=myresolver
-      - traefik.http.routers.vaultwarden.middlewares=crowdsec@docker
-      - traefik.http.services.vaultwarden.loadbalancer.server.port=80
-
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -75,7 +48,7 @@ services:
       - glance.name=Navidrome
       - glance.icon=si:musicbrainz
       - glance.url=https://${NAVIDROME_DOMAIN}/
-      - glance.description=Music streaming!
+      - glance.description=Music Streaming
       - traefik.enable=true
       - traefik.http.routers.navidrome.rule=Host(`${NAVIDROME_DOMAIN}`)
       - traefik.http.routers.navidrome.entrypoints=websecure
@@ -110,6 +83,38 @@ services:
       - traefik.http.routers.audiobookshelf.tls.certresolver=myresolver
       - traefik.http.routers.audiobookshelf.middlewares=crowdsec@docker
       - traefik.http.services.audiobookshelf.loadbalancer.server.port=80
+
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 5000:5000
+    volumes:
+      - ${DATA_ROOT}/books:/books
+      - ${DOCKER_ROOT}/kavita/config:/kavita/config
+    environment:
+      - TZ=${TZ}
+    labels:
+      - glance.name=Kavita
+      - glance.icon=mdi:book-arrow-down
+      - glance.description=eBook Reader
+
+  pluto-for-channels:
+    image: jonmaddox/pluto-for-channels
+    container_name: pluto-for-channels
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 8087:80
+    labels:
+      - glance.name=Pluto-for-Channels
+      - glance.icon=mdi:dots-circle
+      - glance.description=Live TV
+      - glance.parent=jellyfin
 
   wizarr:
     image: ghcr.io/wizarrrr/wizarr:latest
@@ -150,8 +155,8 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_IP=${POSTGRES_IP}
-      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_IP=jellystat-db
+      - POSTGRES_PORT=5432
       - JWT_SECRET=${JWT_SECRET}
       - TZ=${TZ}
     volumes:
@@ -183,50 +188,16 @@ services:
       - postgres-data:/var/lib/postgresql/data
     labels:
       - glance.name=jellystat-db
-      - glance.icon=mdi:jellyfish
-      - glance.description=jellystat database
-      - glance.parent=jellyfin
+      - glance.icon=mdi:database
+      - glance.description=Jellystat Database
+      - glance.parent=jellystat
 
-  glance:
-    image: glanceapp/glance
-    container_name: glance
-    restart: unless-stopped
-    networks:
-      - infrastructure_net
-    ports:
-      - 9080:8080
-    volumes:
-      - ${DOCKER_ROOT}/glance/config:/app/config
-      - ${DOCKER_ROOT}/glance/assets:/app/assets
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      - glance.name=Glance
-      - glance.hide=true
-      
-  kavita:
-    image: jvmilazz0/kavita:latest
-    container_name: kavita
-    restart: unless-stopped
-    networks:
-      - infrastructure_net
-    ports:
-      - 5000:5000
-    volumes:
-      - ${DATA_ROOT}/books:/books
-      - ${DOCKER_ROOT}/kavita/config:/kavita/config
-    environment:
-      - TZ=${TZ}
-    labels:
-      - glance.name=Kavita
-      - glance.icon=mdi:book-arrow-down
-      - glance.description=EBook management
+volumes:
+  jellystat-backup-data:
+  postgres-data:
 
 networks:
   proxy:
     external: true
   infrastructure_net:
     external: true
-
-volumes:
-  postgres-data:
-  jellystat-backup-data:

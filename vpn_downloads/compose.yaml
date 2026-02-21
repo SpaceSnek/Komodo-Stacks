@@ -10,10 +10,10 @@ services:
     networks:
       - infrastructure_net
     ports:
-      - 5030:5030 #slskd
-      - 6789:6789 #nzbget
-      - 9696:9696 #prowlarr
-      - 8191:8191 #flaresolverr
+      - 5030:5030  # slskd
+      - 6789:6789  # nzbget
+      - 9696:9696  # prowlarr
+      - 8191:8191  # flaresolverr
     environment:
       - VPN_SERVICE_PROVIDER=private internet access
       - VPN_TYPE=openvpn
@@ -28,9 +28,10 @@ services:
     volumes:
       - ${DOCKER_ROOT}/gluetun:/gluetun
     labels:
-      glance.name: Gluetun
-      glance.icon: mdi:bottle-tonic
-      glance.description: VPN routed Container
+      - glance.name=Gluetun
+      - glance.icon=mdi:bottle-tonic
+      - glance.description=VPN Gateway
+
   slskd:
     image: slskd/slskd:latest
     container_name: slskd
@@ -49,10 +50,12 @@ services:
       - ${DOCKER_ROOT}/slskd:/app
       - ${DATA_ROOT}:/data
     labels:
-      glance.name: soulseek
-      glance.icon: mdi:archive-music
-      glance.url: http://${HOST_IP}:5030/
-      glance.description: Music Finder
+      - glance.name=Soulseek
+      - glance.icon=mdi:archive-music
+      - glance.url=http://${HOST_IP}:5030/
+      - glance.description=Music Finder
+      - glance.parent=gluetun
+
   nzbget:
     image: nzbgetcom/nzbget:latest
     container_name: nzbget
@@ -68,10 +71,12 @@ services:
       - ${DOCKER_ROOT}/nzbget:/config
       - ${DATA_ROOT}:/data
     labels:
-      glance.name: nzbget
-      glance.icon: mdi:account-arrow-down
-      glance.url: http://${HOST_IP}:6789/
-      glance.description: peer2peer files
+      - glance.name=NZBGet
+      - glance.icon=mdi:account-arrow-down
+      - glance.url=http://${HOST_IP}:6789/
+      - glance.description=Usenet Downloader
+      - glance.parent=gluetun
+
   qbittorrentvpn:
     image: binhex/arch-qbittorrentvpn:latest
     container_name: qbittorrentvpn
@@ -93,13 +98,14 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${DOCKER_ROOT}/qbittorent/openvpn:/config
+      - ${DOCKER_ROOT}/qbittorrent/openvpn:/config
       - ${DATA_ROOT}:/data
     labels:
-      glance.name: QBitTorrent
-      glance.icon: mdi:pirate
-      glance.url: http://${HOST_IP}:8080/
-      glance.description: Torrent Downloader
+      - glance.name=QBitTorrent
+      - glance.icon=mdi:pirate
+      - glance.url=http://${HOST_IP}:8080/
+      - glance.description=Torrent Downloader
+
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
@@ -112,10 +118,12 @@ services:
     volumes:
       - ${DOCKER_ROOT}/prowlarr:/config
     labels:
-      glance.name: prowlarr
-      glance.icon: mdi:list-box
-      glance.url: http://${HOST_IP}:9696/
-      glance.description: Torrent Indexer
+      - glance.name=Prowlarr
+      - glance.icon=mdi:list-box
+      - glance.url=http://${HOST_IP}:9696/
+      - glance.description=Indexer Manager
+      - glance.parent=gluetun
+
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
@@ -129,9 +137,8 @@ services:
       - BROWSER_TIMEOUT=${FS_BROWSER_TIMEOUT}
       - DISABLE_MEDIA=${FS_DISABLE_MEDIA}
     labels:
-      glance.hide: true
+      - glance.hide=true
+
 networks:
-  proxy:
-    external: true
   infrastructure_net:
     external: true

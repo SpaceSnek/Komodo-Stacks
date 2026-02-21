@@ -1,0 +1,67 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - DOMAIN=${VAULTWARDEN_FULL_DOMAIN}
+      - SIGNUPS_ALLOWED=${SIGNUPS_ALLOWED}
+      - WEBSOCKET_ENABLED=${WEBSOCKET_ENABLED}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/vaultwarden/vw-data:/data
+    labels:
+      - glance.name=Vaultwarden
+      - glance.icon=si:vaultwarden
+      - glance.url=https://${VAULTWARDEN_DOMAIN}/
+      - glance.description=Password Manager
+      - traefik.enable=true
+      - traefik.http.routers.vaultwarden.rule=Host(`${VAULTWARDEN_DOMAIN}`)
+      - traefik.http.routers.vaultwarden.entrypoints=websecure
+      - traefik.http.routers.vaultwarden.tls=true
+      - traefik.http.routers.vaultwarden.tls.certresolver=myresolver
+      - traefik.http.routers.vaultwarden.middlewares=crowdsec@docker
+      - traefik.http.services.vaultwarden.loadbalancer.server.port=80
+
+  archisteamfarm:
+    image: justarchi/archisteamfarm:latest
+    container_name: archi-steam-farm
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - infrastructure_net
+    ports:
+      - 1243:1242
+    volumes:
+      - ${DOCKER_ROOT}/archi/config:/app/config
+    labels:
+      - glance.name=ArchiSteamFarm
+      - glance.icon=si:steam
+      - glance.url=http://${HOST_IP}:1243/
+      - glance.description=Steam Card Farming
+
+  teamspeak:
+    image: teamspeaksystems/teamspeak6-server:latest
+    container_name: teamspeak-server
+    restart: unless-stopped
+    ports:
+      - "9987:9987/udp"   # Voice Port
+      - "30033:30033/tcp" # File Transfer
+      # - "10080:10080/tcp" # Web Query
+    environment:
+      - TSSERVER_LICENSE_ACCEPTED=accept
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${DOCKER_ROOT}/ts6:/var/tsserver"
+
+networks:
+  proxy:
+    external: true
+  infrastructure_net:
+    external: true

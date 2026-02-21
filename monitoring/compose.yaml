@@ -1,0 +1,72 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: always
+    networks:
+      - proxy
+      - infrastructure_net
+    ports:
+      - 3001:3001
+    environment:
+      - TZ=${TZ}
+      - UMASK=0022
+    volumes:
+      - ${DOCKER_ROOT}/kuma:/app/data
+    labels:
+      - glance.name=UptimeKuma
+      - glance.icon=si:uptimekuma
+      - glance.url=https://${KUMA_DOMAIN}/
+      - glance.description=Server Status
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.uptime-kuma.rule=Host(`${KUMA_DOMAIN}`)
+      - traefik.http.routers.uptime-kuma.entrypoints=websecure
+      - traefik.http.routers.uptime-kuma.tls=true
+      - traefik.http.routers.uptime-kuma.tls.certresolver=myresolver
+      - traefik.http.routers.uptime-kuma.middlewares=crowdsec@docker
+      - traefik.http.services.uptime-kuma.loadbalancer.server.port=3001
+
+  glance:
+    image: glanceapp/glance
+    container_name: glance
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    ports:
+      - 9080:8080
+    volumes:
+      - ${DOCKER_ROOT}/glance/config:/app/config
+      - ${DOCKER_ROOT}/glance/assets:/app/assets
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - glance.name=Glance
+      - glance.hide=true
+
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    restart: unless-stopped
+    networks:
+      - proxy
+      - infrastructure_net
+    environment:
+      - TZ=${TZ}
+    labels:
+      - glance.name=whoami
+      - glance.icon=mdi:help
+      - glance.url=https://${WHOAMI_DOMAIN}/
+      - glance.description=Debug Container
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.whoami.rule=Host(`${WHOAMI_DOMAIN}`)
+      - traefik.http.routers.whoami.entrypoints=websecure
+      - traefik.http.routers.whoami.tls=true
+      - traefik.http.routers.whoami.tls.certresolver=myresolver
+      - traefik.http.routers.whoami.middlewares=crowdsec@docker
+
+networks:
+  proxy:
+    external: true
+  infrastructure_net:
+    external: true
