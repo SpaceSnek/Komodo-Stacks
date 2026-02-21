@@ -12,13 +12,13 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DOCKER_CONFIG_BASE}/radarr:/config
-      - ${MEDIA_DATA_PATH}:/data
+      - ${DOCKER_ROOT}/radarr:/config
+      - ${DATA_ROOT}:/data
     labels:
-      glance.name: Radarr
-      glance.icon: si:radarr
-      glance.url: http://${SERVER_IP}:7878/
-      glance.description: Movie indexer
+      - glance.name=Radarr
+      - glance.icon=si:radarr
+      - glance.url=http://${HOST_IP}:7878/
+      - glance.description=Movie Management
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -33,13 +33,13 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
-      - ${DOCKER_CONFIG_BASE}/sonarr:/config
-      - ${MEDIA_DATA_PATH}:/data
+      - ${DOCKER_ROOT}/sonarr:/config
+      - ${DATA_ROOT}:/data
     labels:
-      glance.name: Sonarr
-      glance.icon: si:sonarr
-      glance.url: http://${SERVER_IP}:8989/
-      glance.description: TV Indexer
+      - glance.name=Sonarr
+      - glance.icon=si:sonarr
+      - glance.url=http://${HOST_IP}:8989/
+      - glance.description=TV Management
 
   jellyseerr:
     image: ghcr.io/fallenbagel/jellyseerr:latest
@@ -56,13 +56,12 @@ services:
       - TZ=${TZ}
       - LOG_LEVEL=${JELLYSEERR_LOG_LEVEL}
     volumes:
-      - ${DOCKER_CONFIG_BASE}/seer:/app/config
+      - ${DOCKER_ROOT}/jellyseerr:/app/config
     labels:
       - glance.name=Jellyseerr
       - glance.icon=mdi:jellyfish
       - glance.url=https://${JELLYSEERR_DOMAIN}
       - glance.description=Request Management
-      - glance.parent=jellyfin
       - traefik.enable=true
       - traefik.http.routers.jellyseerr.rule=Host(`${JELLYSEERR_DOMAIN}`)
       - traefik.http.routers.jellyseerr.entrypoints=websecure
@@ -70,20 +69,6 @@ services:
       - traefik.http.routers.jellyseerr.tls.certresolver=myresolver
       - traefik.http.routers.jellyseerr.middlewares=crowdsec@docker
       - traefik.http.services.jellyseerr.loadbalancer.server.port=5055
-
-  pluto-for-channels:
-    image: jonmaddox/pluto-for-channels
-    container_name: pluto-for-channels
-    restart: unless-stopped
-    networks:
-      - infrastructure_net
-    ports:
-      - 8087:80
-    labels:
-      glance.name: Pluto-for-Channels
-      glance.icon: mdi:dots-circle
-      glance.description: Pluto TV for Channels
-      glance.parent: jellyfin
 
 networks:
   proxy:
