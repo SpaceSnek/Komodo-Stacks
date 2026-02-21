@@ -46,12 +46,14 @@ These stacks rely ***heavily*** on environment variables for best security pract
 I've included a `sample.env` files in the directories to show what variables are required. If this is not filled out, it will simply not work.
 
 Be sure to deploy in the following order:
+```
 1. network_core
 2. monitoring
 3. vpn_downloads
 4. media_automation
 5. media_servers
 6. utilities
+```
 
 
 ## Usage with Komodo 🚀
