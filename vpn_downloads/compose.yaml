@@ -98,7 +98,7 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${DOCKER_ROOT}/qbitorrent/openvpn:/config
+      - ${DOCKER_ROOT}/qbittorent/openvpn:/config
       - ${DATA_ROOT}:/data
     labels:
       - glance.name=QBitTorrent
