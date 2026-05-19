@@ -111,6 +111,8 @@ services:
       - SETGID
       - SETUID
       - DAC_OVERRIDE
+      - CHOWN
+      - FOWNER
 
 networks:
   proxy:
