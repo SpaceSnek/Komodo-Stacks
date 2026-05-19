@@ -86,10 +86,10 @@ services:
     labels:
       - glance.name=SearXNG
       - glance.icon=si:searxng
-      - glance.url=https://${SEARXNG_DOMAIN}/
+      - glance.url=https://search.b1ab.net/
       - glance.description=Private Metasearch
       - traefik.enable=true
-      - traefik.http.routers.searxng.rule=Host(`${SEARXNG_DOMAIN}`)
+      - traefik.http.routers.searxng.rule=Host(`search.b1ab.net`)
       - traefik.http.routers.searxng.entrypoints=websecure
       - traefik.http.routers.searxng.tls=true
       - traefik.http.routers.searxng.tls.certresolver=myresolver
