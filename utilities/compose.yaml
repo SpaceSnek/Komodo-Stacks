@@ -67,7 +67,7 @@ services:
       - proxy
       - infrastructure_net
     environment:
-      - SEARXNG_BASE_URL=https://${SEARXNG_DOMAIN}/
+      - SEARXNG_BASE_URL=https://search.b1ab.net/
       - SEARXNG_SECRET=${SEARXNG_SECRET}
       - UWSGI_WORKERS=4
       - UWSGI_THREADS=4
